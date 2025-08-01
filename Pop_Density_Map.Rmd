@@ -1,0 +1,148 @@
+---
+title: "Leaflet Map w/GPWv4 Population Density Layer"
+author: "BT"
+date: '7/31/2025'
+output: 
+  html_document:
+    toc: yes
+    toc_float: yes
+bibliography: citations.bib
+csl: chicago-notes-bibliography-annotated.csl
+---
+
+# Description:
+
+This markdown file demonstrates how to add a population density layer based on the GPWv4 dataset that can be downloaded from the NASA's Earthdata site as an .asc file.
+
+# Required packages:
+
+-   **leaflet:** Used to generate the leaflet map.
+-   **leaflet.extras:** Used for several unique basemaps included in the map.
+-   **sf:** Used to import the regional map geojson file.
+-   **raster:** Used for importing the GPWv4 .asc file as a raster. Also used for masking and cropping the raster to the regional map.
+-   **RColorBrewer:** Used for color-coding the GPWv4 population data.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Load leaflet packages for generating map
+library (leaflet)
+library(leaflet.extras)
+
+# Load sf package for working with regions map
+library(sf)
+
+# Load raster and RColorBrewer for working with GPWv4 data
+library(raster)
+library(RColorBrewer)
+
+```
+
+# Required data:
+
+Import both the regional map (a .geojson file) and the GPWv4 population density dataset (a .asc file).
+
+The regional map contains polygons for the level-2 administrative units in Bosnia and Herzegovina (BiH). @noauthor_bosnia_nodate These include the various cantons of FBiH, Brcko District, and a single polygon for Republika Srpska. The file contains labels for these units which will be displayed in the map file when hovering over a particular area.
+
+The GPWv4 data used here is the 2.5-minutes version, which describes 2020 population density estimates globally in terms of \~5km grid cells. @center_for_international_earth_science_information_network-ciesin-columbia_university_gridded_2017 These 2020 estimates are typically based off of official population census or other official projections for a given year in each country that is represented. In the case of BiH, the 2013 Census was used as the basis for the 2020 GPWv4 estimates. @center_for_international_earth_science_information_network-ciesin-columbia_university_documentation_2018
+
+```{r imports}
+# Import required files
+
+## WD defaulted to 'Updated Pop Density Maps' folder. Change if WD is different.
+
+## Load BiH map file with cantons/regions level.
+BIH_Regions <- st_read("geoBoundaries-BIH-ADM2_simplified.geojson", quiet = TRUE)
+
+## Load the GPW v4 Population Density layer file
+pop_density <- raster("gpw_v4_population_density_rev11_2020_2pt5_min.asc")
+
+```
+
+## Cropping and masking the GPWv4 data
+
+The raster contains a lot of data! It is population density data for the entire world expressed in terms of \~5km grid cells! Working with such a large file requires a fair amount of computing power. To make operations more efficient, it is best to isolate only the data that is needed. In this case, we will crop the raster to our map of BiH. This will allow us to work with a much smaller amount of data.
+
+A 2-step process is used to isolate the data for BiH. First, the 'crop' function is used to isolate a rectangular selection of the data surrounding BiH. Next, the 'mask' mask function is used to contour the cropped raster to the perimeter of the regional map. Cropping prior to masking is often more computationally efficient, since initial cropping massively reduces the size of the file that needs to be masked.
+
+```{r cropped and masked raster}
+
+# Step 1: Crop the population density raster to the map of BiH
+pop_bih_crop <- crop(pop_density, BIH_Regions)
+
+# Step 2: Mask the cropped population density raster
+pop_bih_mask <- mask(pop_bih_crop, BIH_Regions)
+
+# We can now delete the global population density raster and the cropped raster to free up some memory. We only need the masked version
+rm(pop_bih_crop, pop_density)
+
+```
+
+# Heatmapping with population density
+
+The GPWv4 population density data contains an extremely high level of variation. To improve the quality of visualizations for a specific area, the bins used for the map's color coding should best reflect the area's distribution. Furthermore, if the area's distribution is very skewed, using discrete bins instead of a continuous color scale is preferable. 
+
+In this example, BiH is a predominately rural country with several urban centers. The bins used for the visualization should try to represent this uneven distribution of the population. Accordingly, uneven bins might be best in this case since the data is skewed. The 'colorBins' function offers this flexibility, as opposed to the continuous 'colorNumeric' function. 
+
+```{r create color palette based on population density distribution}
+
+# 5-number summary of masked dataset shows a skewed distribution. A relatively small number of urban grid cells result in a mean population density that is much greater than the median density
+summary(values(pop_bih_mask))
+
+# Create some bins based on this data
+bins <- c(0,20,40,60,80,100,250,500,1000,Inf)
+
+# Create a color palette based on these bins and the density data
+pal <- colorBin(
+  palette = "YlOrRd",
+  domain = values(pop_bih_mask),
+  bins = bins,
+  na.color = "transparent"
+)
+
+```
+
+# Create the
+
+With the GPWv4 population density raster now sized to the map of BiH, the interactive map is ready to be generated using leaflet. In addition to a population density layer, a basic street map and a satellite map are also informative visual options to include. This is especially true when the map is also being used to inspect a sample distribution.
+
+```{r leaflet map with population density basemap and regions}
+
+leaflet() %>%
+  addProviderTiles(providers$OpenStreetMap, group = "Street") %>%
+  addProviderTiles(providers$Esri.WorldImagery, group = "Satellite") %>%
+  addProviderTiles(providers$OpenStreetMap, group = "Pop. Density") %>%
+  addRasterImage(pop_bih_mask, colors = pal, opacity = 0.8, group = "Pop. Density",
+                 attribution = "NASA SEDAC 2020 Gridded Population of the World (GPW) v4 rev11") %>%
+  addLegend(pal = pal, values = values(pop_bih_mask),
+            title = "Pop. Density (5km grid)",
+            labFormat = labelFormat(),
+            opacity = 1,
+            group = "Pop. Density") %>%
+  addPolygons(data = BIH_Regions,
+              color = "black",
+              stroke = TRUE,
+              fill = TRUE,
+              fillOpacity = 0.0001,
+              opacity = 1,
+              weight = 2,
+              label = paste("Region: ", BIH_Regions$shapeName),
+              group = "Lvl 2: Regions")  %>%
+  addFullscreenControl() %>%
+  addScaleBar() %>%
+  addLayersControl(
+    baseGroups = c("Street","Pop. Density","Satellite"),
+    overlayGroups = c("Lvl 2: Regions"),
+    options = layersControlOptions(collapsed = FALSE)
+  )
+
+
+```
+
+## Additional notes:
+
+Inspection of these \~5km gridcells, especially against the street and satellite maps, will reveal how the population density data is often imprecise. While this GPW data is still very useful for generally understanding a population's distribution, it is important to bear in mind its limitations. It should be noted that SEDAC offers an additional GPWv4 dataset containing data quality indicators for all of the grid cells. @center_for_international_earth_science_information_network-ciesin-columbia_university_gridded_2018
+
+Some of the imprecision in this map is related to the size of the grid cells and the areas being aggregated into them. In addition to the 2.5-minutes (\~5km) version of this GPW dataset, versions with other sizes of grid cells are available on Earthdata. These other version include grid cells that are \~1km, \~30km, \~55km, and \~110km. @earth_science_data_systems_gridded_2024
+
+## References:
