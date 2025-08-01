@@ -47,18 +47,15 @@ The regional map contains polygons for the level-2 administrative units in Bosni
 The GPWv4 data used here is the 2.5-minutes version, which describes 2020 population density estimates globally in terms of \~5km grid cells. @center_for_international_earth_science_information_network-ciesin-columbia_university_gridded_2017 These 2020 estimates are typically based off of official population census or other official projections for a given year in each country that is represented. In the case of BiH, the 2013 Census was used as the basis for the 2020 GPWv4 estimates. @center_for_international_earth_science_information_network-ciesin-columbia_university_documentation_2018
 
 ```{r imports}
-# Import required files
 
-# Compressed copy of dataset. Was too large for GitHub.
+# Import the GPWv4 dataset. A compressed copy is used here because the original file is too large for GitHub.
 unzip("gpw_v4_population_density_rev11_2020_2pt5_min.zip")
 
-# WD defaulted to 'Updated Pop Density Maps' folder. Change if WD is different.
+# Load the GPWv4 file as a raster
+pop_density <- raster("gpw_v4_population_density_rev11_2020_2pt5_min.asc")
 
 # Load BiH map file with cantons/regions level.
 BIH_Regions <- st_read("geoBoundaries-BIH-ADM2_simplified.geojson", quiet = TRUE)
-
-# Load the GPW v4 Population Density layer file
-pop_density <- raster("gpw_v4_population_density_rev11_2020_2pt5_min.asc")
 
 ```
 
@@ -76,7 +73,7 @@ pop_bih_crop <- crop(pop_density, BIH_Regions)
 # Step 2: Mask the cropped population density raster
 pop_bih_mask <- mask(pop_bih_crop, BIH_Regions)
 
-# We can now delete the global population density raster and the cropped raster to free up some memory. We only need the masked version
+# We can now delete the global population density raster and the cropped raster to free up some memory. We only need the masked version.
 rm(pop_bih_crop, pop_density)
 
 ```
@@ -89,7 +86,7 @@ In this example, BiH is a predominately rural country with several urban centers
 
 ```{r create color palette based on population density distribution}
 
-# 5-number summary of masked dataset shows a skewed distribution. A relatively small number of urban grid cells result in a mean population density that is much greater than the median density
+# 5-number summary of masked dataset shows a skewed distribution. A relatively small number of urban grid cells result in a mean population density that is much greater than the median density.
 summary(values(pop_bih_mask))
 
 # Create some bins based on this data
@@ -134,7 +131,7 @@ leaflet() %>%
   addFullscreenControl() %>%
   addScaleBar() %>%
   addLayersControl(
-    baseGroups = c("Street","Pop. Density","Satellite"),
+    baseGroups = c("Pop. Density","Street","Satellite"),
     overlayGroups = c("Lvl 2: Regions"),
     options = layersControlOptions(collapsed = FALSE)
   )
