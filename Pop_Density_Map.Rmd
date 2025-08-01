@@ -1,6 +1,6 @@
 ---
 title: "Leaflet Map w/GPWv4 Population Density Layer"
-author: "BT"
+author: "Ben Thompson"
 date: '7/31/2025'
 output: 
   html_document:
@@ -13,6 +13,8 @@ csl: chicago-notes-bibliography-annotated.csl
 # Description
 
 This markdown file demonstrates how to add a population density layer based on the GPWv4 dataset that can be downloaded from the NASA's Earthdata site as an .asc file.
+
+All of the files and code used here can be found in my [github repository.](https://github.com/bpthompson95/leaflet_map_with_GPW_data)
 
 # Required packages
 
@@ -80,9 +82,9 @@ rm(pop_bih_crop, pop_density)
 
 # Heatmapping with population density
 
-The GPWv4 population density data contains an extremely high level of variation. To improve the quality of visualizations for a specific area, the bins used for the map's color coding should best reflect the area's distribution. Furthermore, if the area's distribution is very skewed, using discrete bins instead of a continuous color scale is preferable. 
+The GPWv4 population density data contains an extremely high level of variation. To improve the quality of visualizations for a specific area, the bins used for the map's color coding should best reflect the area's distribution. Furthermore, if the area's distribution is very skewed, using discrete bins instead of a continuous color scale is preferable.
 
-In this example, BiH is a predominately rural country with several urban centers. The bins used for the visualization should try to represent this uneven distribution of the population. Accordingly, uneven bins might be best in this case since the data is skewed. The 'colorBins' function offers this flexibility, as opposed to the continuous 'colorNumeric' function. 
+In this example, BiH is a predominately rural country with several urban centers. The bins used for the visualization should try to represent this uneven distribution of the population. Accordingly, uneven bins might be best in this case since the data is skewed. The 'colorBins' function offers this flexibility, as opposed to the continuous 'colorNumeric' function.
 
 ```{r create color palette based on population density distribution}
 
