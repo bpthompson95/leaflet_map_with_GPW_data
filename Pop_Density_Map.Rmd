@@ -1,16 +1,17 @@
 ---
-title: "Leaflet Map w/GPWv4 Population Density Layer"
-author: "Ben Thompson"
-date: '7/31/2025'
+title: Leaflet Map w/GPWv4 Population Density Layer
+author: Ben Thompson
+date: 7/31/2025
 output: 
   html_document:
     toc: yes
-    toc_float: yes
+    toc_float: true
+    anchor_sections: false
 bibliography: citations.bib
 csl: chicago-notes-bibliography-annotated.csl
 ---
 
-# Description
+# Introduction
 
 This markdown file demonstrates how to add a population density layer based on the GPWv4 dataset that can be downloaded from the NASA's Earthdata site as an .asc file.
 
@@ -141,7 +142,13 @@ leaflet() %>%
 
 ```
 
-# Additional notes
+# Additional map features
+
+In a survey research context, it can be informative to analyze a sample's geographical distribution against a heatmap of the GPW population density data. This can be done by also plotting interview locations or sampling point locations on the leaflet map. The 'addCircles' function is one method of doing this. @noauthor_add_nodate
+
+Leaflet offers a wide variety of other widget features as well. The map above includes a full screen control and a scale bar. However, other search, labeling, and measurement tools are also useful when analyzing sample distributions. ('addSearchFeatures','addMeasurePathTool')
+
+# Additional GPW notes
 
 Inspection of these \~5km gridcells, especially against the street and satellite maps, will reveal how the population density data is often imprecise. While this GPW data is still very useful for generally understanding a population's distribution, it is important to bear in mind its limitations. It should be noted that SEDAC offers an additional GPWv4 dataset containing data quality indicators for all of the grid cells. @center_for_international_earth_science_information_network-ciesin-columbia_university_gridded_2018
 
