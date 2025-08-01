@@ -22,7 +22,7 @@ This markdown file demonstrates how to add a population density layer based on t
 -   **raster:** Used for importing the GPWv4 .asc file as a raster. Also used for masking and cropping the raster to the regional map.
 -   **RColorBrewer:** Used for color-coding the GPWv4 population data.
 
-```{r setup, include=FALSE}
+```{r setup}
 knitr::opts_chunk$set(echo = TRUE)
 
 # Load leaflet packages for generating map
