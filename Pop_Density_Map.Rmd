@@ -10,11 +10,11 @@ bibliography: citations.bib
 csl: chicago-notes-bibliography-annotated.csl
 ---
 
-# Description:
+# Description
 
 This markdown file demonstrates how to add a population density layer based on the GPWv4 dataset that can be downloaded from the NASA's Earthdata site as an .asc file.
 
-# Required packages:
+# Required packages
 
 -   **leaflet:** Used to generate the leaflet map.
 -   **leaflet.extras:** Used for several unique basemaps included in the map.
@@ -38,7 +38,7 @@ library(RColorBrewer)
 
 ```
 
-# Required data:
+# Required data
 
 Import both the regional map (a .geojson file) and the GPWv4 population density dataset (a .asc file).
 
@@ -49,17 +49,20 @@ The GPWv4 data used here is the 2.5-minutes version, which describes 2020 popula
 ```{r imports}
 # Import required files
 
-## WD defaulted to 'Updated Pop Density Maps' folder. Change if WD is different.
+# Compressed copy of dataset. Was too large for GitHub.
+unzip("gpw_v4_population_density_rev11_2020_2pt5_min.zip")
 
-## Load BiH map file with cantons/regions level.
+# WD defaulted to 'Updated Pop Density Maps' folder. Change if WD is different.
+
+# Load BiH map file with cantons/regions level.
 BIH_Regions <- st_read("geoBoundaries-BIH-ADM2_simplified.geojson", quiet = TRUE)
 
-## Load the GPW v4 Population Density layer file
+# Load the GPW v4 Population Density layer file
 pop_density <- raster("gpw_v4_population_density_rev11_2020_2pt5_min.asc")
 
 ```
 
-## Cropping and masking the GPWv4 data
+# Cropping and masking the GPWv4 data
 
 The raster contains a lot of data! It is population density data for the entire world expressed in terms of \~5km grid cells! Working with such a large file requires a fair amount of computing power. To make operations more efficient, it is best to isolate only the data that is needed. In this case, we will crop the raster to our map of BiH. This will allow us to work with a much smaller amount of data.
 
@@ -102,7 +105,7 @@ pal <- colorBin(
 
 ```
 
-# Create the
+# Create the map
 
 With the GPWv4 population density raster now sized to the map of BiH, the interactive map is ready to be generated using leaflet. In addition to a population density layer, a basic street map and a satellite map are also informative visual options to include. This is especially true when the map is also being used to inspect a sample distribution.
 
@@ -139,10 +142,10 @@ leaflet() %>%
 
 ```
 
-## Additional notes:
+# Additional notes
 
 Inspection of these \~5km gridcells, especially against the street and satellite maps, will reveal how the population density data is often imprecise. While this GPW data is still very useful for generally understanding a population's distribution, it is important to bear in mind its limitations. It should be noted that SEDAC offers an additional GPWv4 dataset containing data quality indicators for all of the grid cells. @center_for_international_earth_science_information_network-ciesin-columbia_university_gridded_2018
 
 Some of the imprecision in this map is related to the size of the grid cells and the areas being aggregated into them. In addition to the 2.5-minutes (\~5km) version of this GPW dataset, versions with other sizes of grid cells are available on Earthdata. These other version include grid cells that are \~1km, \~30km, \~55km, and \~110km. @earth_science_data_systems_gridded_2024
 
-## References:
+# References
