@@ -1,7 +1,7 @@
 ---
 title: Leaflet Map w/GPWv4 Population Density Layer
 author: Ben Thompson
-date: 7/31/2025
+date: 8/13/2025
 output: 
   html_document:
     toc: yes
@@ -13,9 +13,11 @@ csl: chicago-notes-bibliography-annotated.csl
 
 # Introduction
 
-This markdown file demonstrates how to add a population density layer based on the GPWv4 dataset that can be downloaded from the NASA's Earthdata site as an .asc file.
+This markdown file demonstrates how to create an interactive map which features a population density layer based on the 2020 "Gridded Population of the World" version 4 dataset (GPWv4). Specifically, it shows how to create such a map using the raster that can currently be downloaded from the NASA's Earthdata site as a .asc file. The markdown also shows how to efficiently use this large dataset by cropping it to a specific area map prior to visualizing the population density data.
 
-All of the files and code used here can be found in my [github repository.](https://github.com/bpthompson95/leaflet_map_with_GPW_data)
+Given recent events, this latter point on the file format is especially important. On April 30, 2025, the contract for the CIESIN-managed NASA Socioeconomic Data and Applications Center (SEDAC) at Columbia University was terminated. Prior to April 30, a SEDAC geoserver hosted the GPW data and made it very easy to use. Just a single url was needed to query the GPW data and add it to a map. However, the termination of this contract also resulted in the end of this geoserver - and the need to directly download a copy of the GPW dataset on NASA's Earthdata site instead.
+
+All of the data and code used in this markdown can be found in my [github repository.](https://github.com/bpthompson95/leaflet_map_with_GPW_data)
 
 # Required packages
 
@@ -45,9 +47,9 @@ library(RColorBrewer)
 
 Import both the regional map (a .geojson file) and the GPWv4 population density dataset (a .asc file).
 
-The regional map contains polygons for the level-2 administrative units in Bosnia and Herzegovina (BiH). @noauthor_bosnia_nodate These include the various cantons of FBiH, Brcko District, and a single polygon for Republika Srpska. The file contains labels for these units which will be displayed in the map file when hovering over a particular area.
+The regional map contains polygons for the level-2 administrative units in Bosnia and Herzegovina (BiH). [@noauthor_bosnia_nodate] These include the various cantons of FBiH, Brcko District, and a single polygon for Republika Srpska. The file contains labels for these units which will be displayed in the map when hovering over a particular area.
 
-The GPWv4 data used here is the 2.5-minutes version, which describes 2020 population density estimates globally in terms of \~5km grid cells. @center_for_international_earth_science_information_network-ciesin-columbia_university_gridded_2017 These 2020 estimates are typically based off of official population census or other official projections for a given year in each country that is represented. In the case of BiH, the 2013 Census was used as the basis for the 2020 GPWv4 estimates. @center_for_international_earth_science_information_network-ciesin-columbia_university_documentation_2018
+The GPWv4 data used in this example is the 2.5-minutes version, which describes 2020 population density estimates globally in terms of \~5km grid cells. [@center_for_international_earth_science_information_network-ciesin-columbia_university_gridded_2017] These 2020 estimates are typically derived from official population censuses or other official projections. In the case of BiH, the 2013 Census was used as the basis for the 2020 GPWv4 estimates. [@center_for_international_earth_science_information_network-ciesin-columbia_university_documentation_2018]
 
 ```{r imports}
 
@@ -85,7 +87,7 @@ rm(pop_bih_crop, pop_density)
 
 The GPWv4 population density data contains an extremely high level of variation. To improve the quality of visualizations for a specific area, the bins used for the map's color coding should best reflect the area's distribution. Furthermore, if the area's distribution is very skewed, using discrete bins instead of a continuous color scale is preferable.
 
-In this example, BiH is a predominately rural country with several urban centers. The bins used for the visualization should try to represent this uneven distribution of the population. Accordingly, uneven bins might be best in this case since the data is skewed. The 'colorBins' function offers this flexibility, as opposed to the continuous 'colorNumeric' function.
+In this example, BiH is a predominately rural country with several urban centers. The bins used for the visualization should try to represent this uneven distribution of the population. Accordingly, uneven bins might be best since the data is skewed. The 'colorBins' function offers this flexibility, as opposed to the continuous 'colorNumeric' function.
 
 ```{r create color palette based on population density distribution}
 
@@ -115,6 +117,8 @@ leaflet() %>%
   addProviderTiles(providers$OpenStreetMap, group = "Street") %>%
   addProviderTiles(providers$Esri.WorldImagery, group = "Satellite") %>%
   addProviderTiles(providers$OpenStreetMap, group = "Pop. Density") %>%
+  # Include the GPWv4 raster using the addRasterImage function.
+  # A line with attribution information to be displayed is also included.
   addRasterImage(pop_bih_mask, colors = pal, opacity = 0.8, group = "Pop. Density",
                  attribution = "NASA SEDAC 2020 Gridded Population of the World (GPW) v4 rev11") %>%
   addLegend(pal = pal, values = values(pop_bih_mask),
@@ -122,6 +126,8 @@ leaflet() %>%
             labFormat = labelFormat(),
             opacity = 1,
             group = "Pop. Density") %>%
+  # The map of BiH is added using the addPolygons function.
+  # Labels are added by referencing the shape names in the map file.
   addPolygons(data = BIH_Regions,
               color = "black",
               stroke = TRUE,
@@ -144,14 +150,14 @@ leaflet() %>%
 
 # Additional map features
 
-In a survey research context, it can be informative to analyze a sample's geographical distribution against a heatmap of the GPW population density data. This can be done by also plotting interview locations or sampling point locations on the leaflet map. The 'addCircles' function is one method of doing this. @noauthor_add_nodate
+In a survey research context, it can be informative to analyze a sample's geographical distribution against a heatmap of the GPW population density data. This can be done by also plotting interview locations or sampling point locations on the leaflet map. The 'addCircles' function is one method of doing this. [@noauthor_add_nodate]
 
 Leaflet offers a wide variety of other widget features as well. The map above includes a full screen control and a scale bar. However, other search, labeling, and measurement tools are also useful when analyzing sample distributions. ('addSearchFeatures','addMeasurePathTool')
 
 # Additional GPW notes
 
-Inspection of these \~5km gridcells, especially against the street and satellite maps, will reveal how the population density data is often imprecise. While this GPW data is still very useful for generally understanding a population's distribution, it is important to bear in mind its limitations. It should be noted that SEDAC offers an additional GPWv4 dataset containing data quality indicators for all of the grid cells. @center_for_international_earth_science_information_network-ciesin-columbia_university_gridded_2018
+Close inspection of these \~5km gridcells, especially against the street and satellite maps, reveals how the population density data is somewhat imprecise. While this GPW data is still very useful for generally understanding a population's distribution, it is important to bear in mind its limitations. It should be noted that SEDAC offers an additional GPWv4 dataset containing data quality indicators for all of the grid cells. [@center_for_international_earth_science_information_network-ciesin-columbia_university_gridded_2018]
 
-Some of the imprecision in this map is related to the size of the grid cells and the areas being aggregated into them. In addition to the 2.5-minutes (\~5km) version of this GPW dataset, versions with other sizes of grid cells are available on Earthdata. These other version include grid cells that are \~1km, \~30km, \~55km, and \~110km. @earth_science_data_systems_gridded_2024
+Some of the imprecision in this map is related to the size of the grid cells and the areas being aggregated into them. In addition to the 2.5-minutes (\~5km) version of this GPW dataset, versions with other sizes of grid cells are available on Earthdata. These other version include grid cells that are \~1km, \~30km, \~55km, and \~110km. [@earth_science_data_systems_gridded_2024]
 
 # References
