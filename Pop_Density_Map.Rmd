@@ -1,5 +1,6 @@
 ---
-title: Leaflet Map w/GPWv4 Population Density Layer
+title: Heatmapping with Population Density Data
+subtitle: How to use NASA's GPWv4 Dataset on EarthData
 author: Ben Thompson
 date: 8/13/2025
 output: 
@@ -13,9 +14,9 @@ csl: chicago-notes-bibliography-annotated.csl
 
 # Introduction
 
-This markdown file demonstrates how to create an interactive map which features a population density layer based on the 2020 "Gridded Population of the World" version 4 dataset (GPWv4). Specifically, it shows how to create such a map using the raster that can currently be downloaded from the NASA's Earthdata site as a .asc file. The markdown also shows how to efficiently use this large dataset by cropping it to a specific area map prior to visualizing the population density data.
+This markdown file demonstrates how to create an interactive map which features a population density layer based on the 2020 "Gridded Population of the World" version 4 dataset (GPWv4) using R. Specifically, it shows how to create such a map using the raster that can currently be downloaded from the NASA's Earthdata site as a .asc file. The markdown also shows how to efficiently use this large dataset by cropping it to a specific area map prior to visualizing the population density data.
 
-Given recent events, this latter point on the file format is especially important. On April 30, 2025, the contract for the CIESIN-managed NASA Socioeconomic Data and Applications Center (SEDAC) at Columbia University was terminated. Prior to April 30, a SEDAC geoserver hosted the GPW data and made it very easy to use. Just a single url was needed to query the GPW data and add it to a map. However, the termination of this contract also resulted in the end of this geoserver - and the need to directly download a copy of the GPW dataset on NASA's Earthdata site instead.
+This latter point on the file format is especially important, given recent events: on April 30, 2025, the contract for the CIESIN-managed NASA Socioeconomic Data and Applications Center (SEDAC) at Columbia University was terminated. Prior to April 30, a SEDAC geoserver hosted the GPW data and made it very easy to use. Just a single url was needed to query the GPW data and add it to a map. However, the termination of this contract also resulted in the end of this geoserver - and the need to directly download a copy of the GPW dataset on NASA's Earthdata site instead.
 
 All of the data and code used in this markdown can be found in my [github repository.](https://github.com/bpthompson95/leaflet_map_with_GPW_data)
 
